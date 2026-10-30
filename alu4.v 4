@@ -1,0 +1,65 @@
+
+module alu4 (
+    input wire [3:0] a,
+    input wire [3:0] b,
+    input wire [2:0] op,
+    output reg [3:0] result,
+    output reg carry,
+    output reg zero
+);
+
+    wire sub;
+    wire [3:0] b_modified;
+    wire [4:0] sum;
+
+    // Select subtraction
+    assign sub = (op == 3'b001);
+
+    // Two's complement
+    assign b_modified = b ^ {4{sub}};
+
+    // Shared adder
+    assign sum = {1'b0, a} +
+                 {1'b0, b_modified} + sub;
+
+    always @(*) begin
+
+        result = 4'b0000;
+        carry = 1'b0;
+
+        case (op)
+
+            3'b000: begin
+                result = sum[3:0];
+                carry = sum[4];
+            end
+
+            3'b001: begin
+                result = sum[3:0];
+                carry = sum[4];
+            end
+
+            3'b010: result = a & b;
+
+            3'b011: result = a | b;
+
+            3'b100: result = a ^ b;
+
+            3'b101: result = ~a;
+
+            3'b110: result = ~(a & b);
+
+            3'b111: result = 4'b0000;
+
+            default: begin
+                result = 4'b0000;
+                carry = 1'b0;
+            end
+
+        endcase
+
+        zero = (result == 4'b0000);
+
+    end
+
+endmodule
